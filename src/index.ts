@@ -1,5 +1,6 @@
 // Start with using express for our web server
 import express from 'express';
+import type { Request, Response } from 'express';
 // Read configuration from .env files
 import 'dotenv/config';
 // Helmet is used to secure the application
@@ -17,6 +18,11 @@ app.use(express.json());
 
 // Add our application routes
 app.use(router);
+
+// Add a simple health route
+app.get('/api/health', (req: Request, res: Response): void => {
+  res.send().status(200);
+});
 
 // Determine the port to use based on environment variables
 const port = Number(process.env.PORT) || 3000;

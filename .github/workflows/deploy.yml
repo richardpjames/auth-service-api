@@ -32,12 +32,13 @@ jobs:
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET: /home/richard/auth-service-api
 
-#      - name: Run Remote Deployment Commands
-#        uses: appleboy/ssh-action@v0.1.7
-#        with:
-#          key: ${{ secrets.SSH_PRIVATE_KEY }}
-#          host: ${{ secrets.REMOTE_HOST }}
-#          username: ${{ secrets.REMOTE_USER }}
-#          script: |
-#            cd /home/richard/auth-service-api
-#            npm run deploy
+      - name: Run Remote Deployment Commands
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          script: |
+            cd /home/richard/auth-service-api
+            npm run deploy
+            pm2 restart auth-service-api
