@@ -24,13 +24,13 @@ jobs:
       - name: Build the NPM Assets
         run: npm run build
 
-#      - name: Sync to Server
-#        uses: easingthemes/ssh-deploy@v2.1.5
-#        env:
-#          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-#          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-#          REMOTE_USER: ${{ secrets.REMOTE_USER }}
-#          TARGET: /home/richard/auth-service-api
+      - name: Sync to Server
+        uses: easingthemes/ssh-deploy@v2.1.5
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: /home/richard/auth-service-api
 
 #      - name: Run Remote Deployment Commands
 #        uses: appleboy/ssh-action@v0.1.7
