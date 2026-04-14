@@ -18,8 +18,10 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Install NPM Dependencies
+      - name: Install NPM Dependencies (Server)
         run: npm install
+
+      - name: Install NPM Dependencies (Client)
         run: npm --prefix client install
 
       - name: Build the NPM Assets
