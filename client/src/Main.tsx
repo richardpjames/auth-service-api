@@ -1,12 +1,12 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router";
-import "./index.css";
-import NotFound from "./NotFound.tsx";
-import Register from "./Register.tsx";
-import LogInPage from "./LogIn.tsx";
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Routes, Route } from 'react-router';
+import './Index.css';
+import NotFound from './NotFound.tsx';
+import Register from './Register.tsx';
+import LogInPage from './LogIn.tsx';
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <div className="flex h-screen flex-col">
