@@ -30,7 +30,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
-          TARGET: /home/richard/auth-service-api
+          TARGET: /home/richard/auth-service
 
       - name: Run Remote Deployment Commands
         uses: appleboy/ssh-action@v0.1.7
@@ -42,7 +42,7 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             . "$NVM_DIR/nvm.sh"
             nvm use 25
-            cd /home/richard/auth-service-api
+            cd /home/richard/auth-service
             npm run prisma:generate
             npm run prisma:deploy
-            pm2 restart auth-service-api
+            pm2 restart auth-service

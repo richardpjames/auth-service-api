@@ -1,4 +1,4 @@
-// Set up prisma to connect to MariaDB (or MySQL)
+// Set up prisma to connect to Postgres
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 
