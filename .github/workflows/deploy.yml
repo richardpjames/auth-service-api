@@ -20,6 +20,7 @@ jobs:
 
       - name: Install NPM Dependencies
         run: npm install
+        run: npm --prefix client install
 
       - name: Build the NPM Assets
         run: npm run build

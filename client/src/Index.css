@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+h1 {
+  @apply text-5xl font-bold mb-5;
+}
+
+p {
+  @apply mb-5;
+}
