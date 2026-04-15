@@ -20,7 +20,7 @@ import {
   deleteClientApp,
   getAllClientApps,
 } from '../controllers/clientAppController.js';
-import { openIdConfiguration } from '../controllers/openIdController.js';
+import { jwks, openIdConfiguration } from '../controllers/openIdController.js';
 
 // Create the router for us to plug in our controllers
 const router = express.Router({ mergeParams: true });
@@ -45,6 +45,7 @@ router.post(['/api/token', '/token'], token);
 router.post(['/api/logout', '/logout'], requireAuth, logout);
 router.get(['/api/userinfo', '/userinfo'], userinfo);
 router.get('/.well-known/openid-configuration', openIdConfiguration);
+router.get('/.well-known/jwks.json', jwks);
 
 // Get our built client directory
 const __filename = fileURLToPath(import.meta.url);

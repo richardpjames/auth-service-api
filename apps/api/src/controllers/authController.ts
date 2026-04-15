@@ -9,6 +9,7 @@ import {
   hashToken,
   signAccessToken,
   signIdToken,
+  verifyAccessToken,
 } from '../lib/auth.js';
 import { sanitizeReturnTo } from '../lib/url.js';
 
@@ -437,19 +438,9 @@ export async function userinfo(req: Request, res: Response): Promise<void> {
   // Trim the token from the wider header
   const accessToken = authorization.slice('Bearer '.length).trim();
 
-  // If no access to the token secret or issuer then send an error (should be in .env)
-  if (!process.env.TOKEN_SECRET || !process.env.TOKEN_ISSUER) {
-    res.status(500).json({ message: 'Internal Server Error' });
-    return;
-  }
-
   // Try and decode the the token and send the user if we can
   try {
-    const secret = new TextEncoder().encode(process.env.TOKEN_SECRET);
-    const { payload } = await jwtVerify(accessToken, secret, {
-      issuer: process.env.TOKEN_ISSUER,
-      audience: getAccessTokenAudience(),
-    });
+    const { payload } = await verifyAccessToken(accessToken);
     // Otherwise get the user from the session key
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
