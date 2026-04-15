@@ -14,6 +14,7 @@
     "build:web": "npm run build -w apps/web",
     "prisma:generate": "npm run prisma:generate -w apps/api",
     "prisma:deploy": "npm run prisma:deploy -w apps/api",
+    "test": "npm run test -w apps/api",
     "start": "npm run start -w apps/api",
     "format": "prettier . --write"
   },
