@@ -5,7 +5,7 @@ import SuccessMessage from './components/SuccessMessage';
 import TextInput from './components/TextInput';
 import z from 'zod';
 import ErrorMessage from './components/ErrorMessage';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { useMe } from './hooks/useMe';
 
