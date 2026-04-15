@@ -3,6 +3,7 @@ import { prisma } from '../db/prisma.js';
 import argon2 from 'argon2';
 import crypto from 'node:crypto';
 import { SignJWT, jwtVerify } from 'jose';
+import { createOpaqueToken } from '../lib/auth.js';
 
 export async function login(req: Request, res: Response): Promise<void> {
   // This function is simpler than some of the others, so using a z schema is overkill
@@ -172,97 +173,238 @@ export async function authorize(req: Request, res: Response) {
 }
 
 export async function token(req: Request, res: Response): Promise<void> {
-  const { grant_type, code, client_id, client_secret, redirect_uri } = req.body;
+  const {
+    grant_type,
+    code,
+    client_id,
+    client_secret,
+    redirect_uri,
+    refresh_token,
+  } = req.body;
 
-  if (grant_type !== 'authorization_code') {
-    res.status(400).json({ message: 'Unsupported Grant Type' });
-    return;
-  }
-
-  // Find the client from the request
-  const client = await prisma.clientApp.findUnique({
-    where: { clientId: client_id },
-  });
-
-  // If there was no client, or the secret and uri don't match up
-  if (
-    !client ||
-    client.clientSecret !== client_secret ||
-    client.redirectUri !== redirect_uri
-  ) {
-    res.status(401).json({ message: 'Invalid Client' });
-    return;
-  }
-
-  // Next get the auth code so that we can check
-  const authCode = await prisma.authCode.findUnique({
-    where: { code },
-    include: {
-      user: true,
-      clientApp: true,
-    },
-  });
-
-  // Make checks that the code exists, has not yet been used, has not expired and belongs to the right client
-  if (
-    !authCode ||
-    authCode.usedAt ||
-    authCode.expiresAt.getTime() < Date.now() ||
-    authCode.clientApp.clientId !== client_id
-  ) {
-    console.log(authCode);
-    if (authCode) {
-      console.log(authCode.usedAt);
-      console.log(authCode.expiresAt.getTime() < Date.now());
-      console.log(authCode.clientApp.clientId !== client_id);
-    }
-    res.status(400).json({ message: 'Invalid Grant' });
-    return;
-  }
-
-  // Update the auth code so that we know it has expired
-  await prisma.authCode.update({
-    where: { id: authCode.id },
-    data: { usedAt: new Date() },
-  });
-
+  // Check that we have the token issuer and secret (for type safety later)
   if (!process.env.TOKEN_ISSUER || !process.env.TOKEN_SECRET) {
     res.status(500).send({ message: 'Internal Server Error' });
     return;
   }
 
-  const secret = new TextEncoder().encode(process.env.TOKEN_SECRET);
+  if (grant_type !== 'authorization_code' && grant_type !== 'refresh_token') {
+    res.status(400).json({ message: 'Unsupported Grant Type' });
+    return;
+  }
 
-  const accessToken = await new SignJWT({
-    sub: authCode.user.id,
-    scope: 'openid',
-  })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuer(process.env.TOKEN_ISSUER)
-    .setAudience(client_id)
-    .setIssuedAt()
-    .setExpirationTime('15m')
-    .sign(secret);
+  // This route to retreive tokens with an authorization code
+  if (grant_type === 'authorization_code') {
+    // Find the client from the request
+    const client = await prisma.clientApp.findUnique({
+      where: { clientId: client_id },
+    });
 
-  const idToken = await new SignJWT({
-    sub: authCode.user.id,
-    email: authCode.user.email,
-    name: authCode.user.displayName,
-    admin: authCode.user.admin,
-  })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuer(process.env.TOKEN_ISSUER)
-    .setAudience(client_id)
-    .setIssuedAt()
-    .setExpirationTime('15m')
-    .sign(secret);
+    // If there was no client, or the secret and uri don't match up
+    if (
+      !client ||
+      client.clientSecret !== client_secret ||
+      client.redirectUri !== redirect_uri
+    ) {
+      res.status(401).json({ message: 'Invalid Client' });
+      return;
+    }
 
-  res.json({
-    access_token: accessToken,
-    token_type: 'Bearer',
-    expires_in: 900,
-    id_token: idToken,
-  });
+    // Next get the auth code so that we can check
+    const authCode = await prisma.authCode.findUnique({
+      where: { code },
+      include: {
+        user: true,
+        clientApp: true,
+      },
+    });
+
+    // Make checks that the code exists, has not yet been used, has not expired and belongs to the right client
+    if (
+      !authCode ||
+      authCode.usedAt ||
+      authCode.expiresAt.getTime() < Date.now() ||
+      authCode.clientApp.clientId !== client_id
+    ) {
+      if (authCode) {
+        console.log(authCode.usedAt);
+        console.log(authCode.expiresAt.getTime() < Date.now());
+        console.log(authCode.clientApp.clientId !== client_id);
+      }
+      res.status(400).json({ message: 'Invalid Grant' });
+      return;
+    }
+
+    // Update the auth code so that we know it has expired
+    await prisma.authCode.update({
+      where: { id: authCode.id },
+      data: { usedAt: new Date() },
+    });
+
+    const secret = new TextEncoder().encode(process.env.TOKEN_SECRET);
+
+    const accessToken = await new SignJWT({
+      sub: authCode.user.id,
+      scope: 'openid',
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuer(process.env.TOKEN_ISSUER)
+      .setAudience('auth-service-api')
+      .setIssuedAt()
+      .setExpirationTime('15m')
+      .sign(secret);
+
+    const idToken = await new SignJWT({
+      sub: authCode.user.id,
+      email: authCode.user.email,
+      name: authCode.user.displayName,
+      admin: authCode.user.admin,
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuer(process.env.TOKEN_ISSUER)
+      .setAudience(client_id)
+      .setIssuedAt()
+      .setExpirationTime('15m')
+      .sign(secret);
+
+    // Generate a random token
+    const refreshToken = createOpaqueToken();
+
+    // Store it in the database
+    await prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: authCode.user.id,
+        clientAppId: client.id,
+        // This adds 30 das
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    // Return the access, id and refresh tokens to the requester
+    res.json({
+      access_token: accessToken,
+      token_type: 'Bearer',
+      expires_in: 900,
+      id_token: idToken,
+      refresh_token: refreshToken,
+    });
+  }
+
+  // This route for refresh tokens
+  if (grant_type === 'refresh_token') {
+    // Get the client so that we can validate their secret
+    const client = await prisma.clientApp.findUnique({
+      where: { clientId: client_id },
+    });
+
+    // If there is no client specified and the secret is missing then send a message
+    if (!client || client.clientSecret !== client_secret) {
+      res.status(401).json({ message: 'Invalid Client' });
+      return;
+    }
+
+    // Generate a new refresh token and calculate an expiry date in 30 days
+    const rotatedRefreshToken = createOpaqueToken();
+    const now = new Date();
+    const refreshTokenExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    // Wrap our prisma work inside a transaction so that all logic is executed togehter
+    const storedRefreshToken = await prisma.$transaction(async (tx) => {
+      // tx is the transaction - we'll first find the existing token
+      const existingRefreshToken = await tx.refreshToken.findUnique({
+        where: { token: refresh_token },
+        include: {
+          user: true,
+          clientApp: true,
+        },
+      });
+
+      // If it doesn't exist, or it's been used, revoked or expired - or it doesn't belong to this client then return
+      if (
+        !existingRefreshToken ||
+        existingRefreshToken.usedAt ||
+        existingRefreshToken.revokedAt ||
+        existingRefreshToken.expiresAt.getTime() < now.getTime() ||
+        existingRefreshToken.clientApp.clientId !== client_id
+      ) {
+        return null;
+      }
+
+      // Now update that token to say that it has been consumed
+      const consumeResult = await tx.refreshToken.updateMany({
+        where: {
+          id: existingRefreshToken.id,
+          usedAt: null,
+          revokedAt: null,
+        },
+        data: { usedAt: now },
+      });
+
+      // Check for if the update happened or return
+      if (consumeResult.count !== 1) {
+        return null;
+      }
+
+      // Then create the new refresh token
+      await tx.refreshToken.create({
+        data: {
+          token: rotatedRefreshToken,
+          userId: existingRefreshToken.user.id,
+          clientAppId: existingRefreshToken.clientApp.id,
+          expiresAt: refreshTokenExpiry,
+        },
+      });
+
+      // If all of that worked then return the existng refresh token
+      return existingRefreshToken;
+    });
+
+    // If there was no stored token then we didn't create a new one, but the request was invalid
+    if (!storedRefreshToken) {
+      res.status(400).json({ message: 'Invalid Refresh Token' });
+      return;
+    }
+
+    // Generate a secret from the environment variable
+    const secret = new TextEncoder().encode(process.env.TOKEN_SECRET);
+
+    // Create a new access token
+    const accessToken = await new SignJWT({
+      sub: storedRefreshToken.user.id,
+      scope: 'openid',
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuer(process.env.TOKEN_ISSUER)
+      .setAudience('auth-service-api')
+      .setIssuedAt()
+      .setExpirationTime('15m')
+      .sign(secret);
+
+    // Create a new ID token
+    const idToken = await new SignJWT({
+      sub: storedRefreshToken.user.id,
+      email: storedRefreshToken.user.email,
+      name: storedRefreshToken.user.displayName,
+      admin: storedRefreshToken.user.admin,
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuer(process.env.TOKEN_ISSUER)
+      .setAudience(client_id)
+      .setIssuedAt()
+      .setExpirationTime('15m')
+      .sign(secret);
+
+    // Send back all of the tokens
+    res.json({
+      access_token: accessToken,
+      token_type: 'Bearer',
+      expires_in: 900,
+      refresh_token: rotatedRefreshToken,
+      id_token: idToken,
+    });
+    return;
+  }
 }
 
 export async function logout(req: Request, res: Response): Promise<void> {
@@ -284,6 +426,18 @@ export async function logout(req: Request, res: Response): Promise<void> {
     sameSite: 'lax',
     path: '/',
     secure: process.env.NODE_ENV === 'production',
+  });
+
+  // Revoke any refresh tokens
+  await prisma.refreshToken.updateMany({
+    where: {
+      // Because of the requireAuth middleware this will be set
+      userId: req.user!.id,
+      revokedAt: null,
+    },
+    data: {
+      revokedAt: new Date(),
+    },
   });
 
   // Respond to the client
@@ -316,6 +470,7 @@ export async function userinfo(req: Request, res: Response): Promise<void> {
     const secret = new TextEncoder().encode(process.env.TOKEN_SECRET);
     const { payload } = await jwtVerify(accessToken, secret, {
       issuer: process.env.TOKEN_ISSUER,
+      audience: 'auth-service-api',
     });
     // Otherwise get the user from the session key
     const user = await prisma.user.findUnique({
@@ -333,6 +488,7 @@ export async function userinfo(req: Request, res: Response): Promise<void> {
     // If we can't find the user then there is an issue with the access token
     if (!user) {
       res.status(401).json({ message: 'Invalid or expired access token' });
+      return;
     }
     // Otherwise send the user back
     res.status(200).json(user);

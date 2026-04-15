@@ -41,7 +41,7 @@ router.delete(
 router.post(['/api/login', '/login'], login);
 router.get(['/api/authorize', '/authorize'], authorize);
 router.post(['/api/token', '/token'], token);
-router.post(['/api/logout', '/logout'], logout);
+router.post(['/api/logout', '/logout'], requireAuth, logout);
 router.get(['/api/userinfo', '/userinfo'], userinfo);
 
 // Get our built client directory
