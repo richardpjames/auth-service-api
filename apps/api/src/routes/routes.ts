@@ -5,15 +5,6 @@ import {
   getAllUsers,
   me,
 } from '../controllers/userController.js';
-import {
-  authorize,
-  forgottenPassword,
-  login,
-  logout,
-  resetPassword,
-  token,
-  userinfo,
-} from '../controllers/authController.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { requireAdmin, requireAuth } from '../middleware/auth.js';
@@ -23,6 +14,13 @@ import {
   getAllClientApps,
 } from '../controllers/clientAppController.js';
 import { jwks, openIdConfiguration } from '../controllers/openIdController.js';
+import { login, logout } from '../controllers/sessionController.js';
+import { authorize, token } from '../controllers/oauthController.js';
+import { userinfo } from '../controllers/userInfoController.js';
+import {
+  forgottenPassword,
+  resetPassword,
+} from '../controllers/passwordController.js';
 
 // Create the router for us to plug in our controllers
 const router = express.Router({ mergeParams: true });
