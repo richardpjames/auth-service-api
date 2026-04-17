@@ -32,14 +32,20 @@ export async function createTestClientApp(
     clientSecret: string;
     name: string;
     redirectUri: string;
+    isPublic: boolean;
   }> = {},
 ) {
   return prisma.clientApp.create({
     data: {
       clientId: (overrides.clientId ?? 'test-client').toLowerCase(),
-      clientSecret: hashSecret(overrides.clientSecret ?? 'super-client-secret'),
+      clientSecret: overrides.clientSecret
+        ? hashSecret(overrides.clientSecret)
+        : overrides.isPublic
+          ? null
+          : hashSecret('super-client-secret'),
       name: overrides.name ?? 'Test Client',
       redirectUri: overrides.redirectUri ?? 'http://localhost:3001/callback',
+      isPublic: overrides.isPublic ?? false,
     },
   });
 }
