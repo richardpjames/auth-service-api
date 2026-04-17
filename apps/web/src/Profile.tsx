@@ -18,7 +18,7 @@ const Profile = () => {
 
   // Generate an avatar for the user
   const avatar = createAvatar(thumbs, {
-    seed: user?.displayName,
+    seed: user?.email,
     size: 256,
   });
 
