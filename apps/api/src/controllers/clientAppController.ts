@@ -62,7 +62,7 @@ export async function createClientApp(
 
   res
     .status(201)
-    .json({ message: 'Client App created succesfully', clientApp });
+    .json({ message: 'Client App created successfully', clientApp });
 }
 
 export async function getAllClientApps(

@@ -209,7 +209,7 @@ describe('POST /api/clientapps', () => {
     });
 
     expect(response.status).toBe(201);
-    expect(response.body.message).toBe('Client App created succesfully');
+    expect(response.body.message).toBe('Client App created successfully');
     expect(response.body.clientApp).toBeTruthy();
     expect(response.body.clientApp.name).toBe('Blog Client');
     expect(response.body.clientApp.clientId).toBe('blog-client');

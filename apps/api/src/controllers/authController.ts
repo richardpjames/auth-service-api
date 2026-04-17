@@ -595,7 +595,12 @@ export async function resetPassword(
     existingResetToken.expiresAt.getTime() < Date.now() ||
     existingResetToken.usedAt
   ) {
-    res.status(400).send({ message: 'Invalid reset token.' });
+    res
+      .status(400)
+      .send({
+        message:
+          'You have either reset your password already, or your request has expired. Please start again.',
+      });
     return;
   }
 

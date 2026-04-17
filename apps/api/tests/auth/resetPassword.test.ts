@@ -83,7 +83,10 @@ describe('reset password', () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.body).toEqual({ message: 'Invalid reset token.' });
+    expect(response.body).toEqual({
+      message:
+        'You have either reset your password already, or your request has expired. Please start again.',
+    });
   });
 
   it('rejects requests without a token', async () => {

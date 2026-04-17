@@ -45,7 +45,7 @@ const AdminClientApps = () => {
       const response = await axios.delete(`/api/clientapps/${id}`);
       // Set success message
       setSuccessMessage(
-        response?.data?.message ?? 'New client app created succesfully.',
+        response?.data?.message ?? 'New client app created successfully.',
       );
       // Then remove from the list of client apps
       setClientApps((clientApps) =>

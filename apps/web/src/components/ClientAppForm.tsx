@@ -44,7 +44,7 @@ const ClientAppForm = ({ clientApps, setClientApps }: ClientAppFormProps) => {
       const response = await axios.post('/api/clientapps', data);
       reset();
       setServerSuccess(
-        response?.data?.message ?? 'New client app created succesfully.',
+        response?.data?.message ?? 'New client app created successfully.',
       );
       setClientApps([...clientApps, response.data.clientApp]);
     } catch (error: unknown) {

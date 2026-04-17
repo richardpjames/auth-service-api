@@ -16,6 +16,11 @@ const Logout = lazy(() => import('./Logout.tsx'));
 const AdminHome = lazy(() => import('./AdminHome.tsx'));
 const AdminUsers = lazy(() => import('./AdminUsers.tsx'));
 const AdminClientApps = lazy(() => import('./AdminClientApps.tsx'));
+const ForgottenPassword = lazy(() => import('./ForgottenPassword.tsx'));
+const ForgottenPasswordConfirm = lazy(
+  () => import('./ForgottenPasswordConfirm.tsx'),
+);
+const ResetPassword = lazy(() => import('./ResetPassword.tsx'));
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -27,6 +32,12 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/loggedin" element={<LoggedIn />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgottenpassword" element={<ForgottenPassword />} />
+            <Route
+              path="/forgottenpasswordconfirm"
+              element={<ForgottenPasswordConfirm />}
+            />
+            <Route path="/resetpassword" element={<ResetPassword />} />
             <Route path="/notauthorised" element={<NotAuthorised />} />
             <Route path="*" element={<NotFound />} />
           </Route>
