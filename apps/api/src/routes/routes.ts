@@ -7,8 +7,10 @@ import {
 } from '../controllers/userController.js';
 import {
   authorize,
+  forgottenPassword,
   login,
   logout,
+  resetPassword,
   token,
   userinfo,
 } from '../controllers/authController.js';
@@ -44,6 +46,9 @@ router.get(['/api/authorize', '/authorize'], authorize);
 router.post(['/api/token', '/token'], token);
 router.post(['/api/logout', '/logout'], requireAuth, logout);
 router.get(['/api/userinfo', '/userinfo'], userinfo);
+router.post(['/api/forgottenpassword'], forgottenPassword);
+router.post(['/api/resetpassword'], resetPassword);
+
 router.get('/.well-known/openid-configuration', openIdConfiguration);
 router.get('/.well-known/jwks.json', jwks);
 

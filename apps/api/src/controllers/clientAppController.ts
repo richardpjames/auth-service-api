@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../db/prisma.js';
 import { z } from 'zod';
-import { hashClientSecret } from '../lib/auth.js';
+import { hashSecret } from '../lib/auth.js';
 
 // Describe the valid format for a client app on creation
 const createClientAppSchema = z.object({
@@ -47,7 +47,7 @@ export async function createClientApp(
     data: {
       clientId: clientId.toLowerCase(),
       name,
-      clientSecret: hashClientSecret(clientSecret),
+      clientSecret: hashSecret(clientSecret),
       redirectUri,
     },
     // Get the data back

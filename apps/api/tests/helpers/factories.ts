@@ -1,6 +1,6 @@
 import argon2 from 'argon2';
 import { prisma } from '../../src/db/prisma.js';
-import { hashClientSecret } from '../../src/lib/auth.js';
+import { hashSecret } from '../../src/lib/auth.js';
 
 // Creates new users
 export async function createTestUser(
@@ -37,9 +37,7 @@ export async function createTestClientApp(
   return prisma.clientApp.create({
     data: {
       clientId: (overrides.clientId ?? 'test-client').toLowerCase(),
-      clientSecret: hashClientSecret(
-        overrides.clientSecret ?? 'super-client-secret',
-      ),
+      clientSecret: hashSecret(overrides.clientSecret ?? 'super-client-secret'),
       name: overrides.name ?? 'Test Client',
       redirectUri: overrides.redirectUri ?? 'http://localhost:3001/callback',
     },

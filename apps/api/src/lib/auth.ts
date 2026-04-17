@@ -65,16 +65,16 @@ export function hashToken(token: string): string {
 }
 
 // This is used for storing hashed client secrets
-export function hashClientSecret(clientSecret: string): string {
+export function hashSecret(clientSecret: string): string {
   return crypto.createHash('sha256').update(clientSecret).digest('hex');
 }
 
 // This is used for validating provided client secrets
-export function verifyClientSecret(
+export function verifySecret(
   providedSecret: string,
   storedSecretHash: string,
 ): boolean {
-  return hashClientSecret(providedSecret) === storedSecretHash;
+  return hashSecret(providedSecret) === storedSecretHash;
 }
 
 // For signing our access tokens consistently
