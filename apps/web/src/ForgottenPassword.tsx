@@ -33,7 +33,7 @@ const ForgottenPassword = () => {
   //Navigate away if there is a user
   const navigate = useNavigate();
   if (!isLoading && user) {
-    navigate('/loggedin');
+    navigate(`/profile${search}`);
   }
 
   // The logic for handling the submit of the form

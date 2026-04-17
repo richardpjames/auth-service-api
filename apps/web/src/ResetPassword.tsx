@@ -37,7 +37,7 @@ const ResetPassword = () => {
 
   //Navigate away if there is a user
   if (!isLoading && user) {
-    navigate('/loggedin');
+    navigate(`/profile${search}`);
   }
 
   // The logic for handling the submit of the form

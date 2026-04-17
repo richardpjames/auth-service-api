@@ -13,7 +13,7 @@ const ForgottenPasswordConfirm = () => {
   //Navigate away if there is a user
   const navigate = useNavigate();
   if (!isLoading && user) {
-    navigate('/loggedin');
+    navigate(`/profile${search}`);
   }
 
   if (isLoading) {

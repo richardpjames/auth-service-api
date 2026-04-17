@@ -11,7 +11,7 @@ const NotFound = lazy(() => import('./NotFound.tsx'));
 const NotAuthorised = lazy(() => import('./NotAuthorised.tsx'));
 const Register = lazy(() => import('./Register.tsx'));
 const LogInPage = lazy(() => import('./LogIn.tsx'));
-const LoggedIn = lazy(() => import('./LoggedIn.tsx'));
+const Profile = lazy(() => import('./Profile.tsx'));
 const Logout = lazy(() => import('./Logout.tsx'));
 const AdminHome = lazy(() => import('./AdminHome.tsx'));
 const AdminUsers = lazy(() => import('./AdminUsers.tsx'));
@@ -29,7 +29,7 @@ createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LogInPage />} />
-            <Route path="/loggedin" element={<LoggedIn />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgottenpassword" element={<ForgottenPassword />} />

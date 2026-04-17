@@ -6,6 +6,7 @@ type User = {
   email: string;
   displayName: string;
   admin: boolean;
+  createdAt: Date;
 };
 
 type UseMeResult = {
