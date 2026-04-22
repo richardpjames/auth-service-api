@@ -64,7 +64,7 @@ export async function forgottenPassword(
     const resend = new Resend(process.env.RESEND_API_KEY);
     // Send the password reset email
     const { data, error } = await resend.emails.send({
-      from: 'NoReply <noreply@richardpjames.com>',
+      from: 'NoReply <noreply@codingafterhours.dev>',
       to: [user.email],
       template: {
         id: 'password-reset',
